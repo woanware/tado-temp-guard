@@ -12,7 +12,6 @@ import (
 
 	flags "github.com/jessevdk/go-flags"
 	cron "github.com/robfig/cron"
-	viper "github.com/spf13/viper"
 )
 
 // Background: http://blog.scphillips.com/posts/2017/01/the-tado-api-v2/
@@ -26,7 +25,7 @@ type Options struct {
 // ##### Constants ############################################################
 
 const APP_NAME string = "tado-temp-guard (tts)"
-const APP_VERSION string = "0.0.1"
+const APP_VERSION string = "0.0.2"
 
 const URL_HOME_ID string = "https://my.tado.com/api/v2/me?username=%s&password=%s"
 const URL_ZONES string = "https://my.tado.com/api/v2/homes/%d/zones?username=%s&password=%s"
@@ -36,12 +35,11 @@ const URL_OVERLAY string = "https://my.tado.com/api/v2/homes/%d/zones/%d/overlay
 // ##### Variables ############################################################
 
 var (
-	options      Options
-	configReader *viper.Viper
-	config       *Config
-	cronner      *cron.Cron
-	home         Home
-	zones        Zones
+	options Options
+	config  *Config
+	cronner *cron.Cron
+	home    Home
+	zones   Zones
 )
 
 // ##### Methods ##############################################################
@@ -52,10 +50,7 @@ func main() {
 
 	parseCommandLine()
 	initialiseConfiguration()
-	config = parseConfiguration()
-	if config == nil {
-		return
-	}
+	loadConfiguration()
 
 	err := getHome()
 	if err != nil {
@@ -186,7 +181,7 @@ func checkTemperature() {
 			continue
 		}
 
-		fmt.Printf("Temperature has been set TOOOOOO HIGH: %2.1f", zone.Setting.Temperature.Celsius)
+		fmt.Printf("Temperature has been set TOOOOOO HIGH: %2.1f\n", zone.Setting.Temperature.Celsius)
 
 		setTemperature(z.ID)
 	}
@@ -236,10 +231,4 @@ func setTemperature(zoneID int) {
 	} else {
 		fmt.Printf("Temperature set to: %2.1f", overlay.Setting.Temperature.Celsius)
 	}
-}
-
-//
-func reloadConfig() {
-
-	config = parseConfiguration()
 }

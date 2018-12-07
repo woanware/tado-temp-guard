@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
 	"strconv"
 
 	fsnotify "github.com/fsnotify/fsnotify"
@@ -24,34 +24,35 @@ type Config struct {
 // LoadConfig loads the configuration data from the "bgpm" config file
 func initialiseConfiguration() {
 
-	configReader = viper.New()
-	configReader.SetConfigName("tado-temp-guard")
-	configReader.AddConfigPath(".")
-	err := configReader.ReadInConfig()
+	config = new(Config)
+
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("config")
+	viper.AddConfigPath("./")
+	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("Error reading config file: %s \n", err)
+		fmt.Printf("Error reading config file: %v \n", err)
+		os.Exit(-1)
 	}
 
+	viper.WatchConfig()
+
 	viper.OnConfigChange(func(e fsnotify.Event) {
-		reloadConfig()
+		loadConfiguration()
 	})
 }
 
 //
-func parseConfiguration() *Config {
+func loadConfiguration() {
 
-	config := new(Config)
+	config.UserName = viper.GetString("user_name")
+	config.Password = viper.GetString("password")
+	config.IntervalMinutes = viper.GetInt("interval_minutes")
 
-	config.UserName = configReader.GetString("user_name")
-	config.Password = configReader.GetString("password")
-	config.IntervalMinutes = configReader.GetInt("interval_minutes")
-
-	tempMax, err := strconv.ParseFloat(configReader.GetString("max_temperature"), 32)
+	tempMax, err := strconv.ParseFloat(viper.GetString("max_temperature"), 32)
 	if err != nil {
-		fmt.Printf("Invalid max temperature: %v", configReader.GetString("max_temperature"))
-		return nil
+		fmt.Printf("Invalid max temperature: %v (defaulting to 21)", viper.GetString("max_temperature"))
+		os.Exit(-1)
 	}
 	config.MaxTemperatureCelsius = tempMax
-
-	return config
 }
