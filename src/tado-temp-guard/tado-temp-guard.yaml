@@ -1,0 +1,4 @@
+user_name: somone@somewhere.com
+password: supersecret
+max_temperature: 21
+interval_minutes: 5
