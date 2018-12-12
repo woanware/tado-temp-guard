@@ -25,7 +25,7 @@ type Options struct {
 // ##### Constants ############################################################
 
 const APP_NAME string = "tado-temp-guard (tts)"
-const APP_VERSION string = "0.0.2"
+const APP_VERSION string = "0.0.3"
 
 const URL_HOME_ID string = "https://my.tado.com/api/v2/me?username=%s&password=%s"
 const URL_ZONES string = "https://my.tado.com/api/v2/homes/%d/zones?username=%s&password=%s"
@@ -177,11 +177,13 @@ func checkTemperature() {
 			continue
 		}
 
+		fmt.Printf("Current temperature set to: %2.1f\n\n", zone.Setting.Temperature.Celsius)
+
 		if zone.Setting.Temperature.Celsius <= config.MaxTemperatureCelsius {
 			continue
 		}
 
-		fmt.Printf("Temperature has been set TOOOOOO HIGH: %2.1f\n", zone.Setting.Temperature.Celsius)
+		fmt.Printf("Temperature has been set TOOOOOO HIGH: %2.1f\n\n", zone.Setting.Temperature.Celsius)
 
 		setTemperature(z.ID)
 	}
@@ -229,6 +231,6 @@ func setTemperature(zoneID int) {
 	if overlay.Setting.Temperature.Celsius != config.MaxTemperatureCelsius {
 		fmt.Println("Unable to set temperature")
 	} else {
-		fmt.Printf("Temperature set to: %2.1f", overlay.Setting.Temperature.Celsius)
+		fmt.Printf("Temperature set to: %2.1f\n", overlay.Setting.Temperature.Celsius)
 	}
 }
